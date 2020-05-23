@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 # Natas16 - blind grep injection
 
 import time
@@ -70,14 +72,18 @@ def find_password(password_character_set):
                 return None
     return part_password
 
-t0 = time.time()  # Start timing
-new_character_set = reduce_character_set(characters_set)
-t1 = time.time()  # reduce character set done, starting password search.
-print("[Reduce character set - completed in:{0}] Confirmed new characters set. "
+def main():
+    t0 = time.time()  # Start timing
+    new_character_set = reduce_character_set(characters_set)
+    t1 = time.time()  # reduce character set done, starting password search.
+    print("[Reduce character set - completed in:{0}] Confirmed new characters set. "
       "The following characters are found in password: {1}".format(format_timer(t1 - t0), new_character_set))
-password = find_password(new_character_set)
-if password:
-    t2 = time.time()  # End timer the search for the password is complete.
-    print(
-        "[Password search - completed in:{0}] Success, the password is: {1}\n".format(format_timer(t2 - t1), password))
-    print("Total Time Taken:{0}".format(format_timer(t2 - t0)))
+    password = find_password(new_character_set)
+    if password:
+        t2 = time.time()  # End timer the search for the password is complete.
+        print(
+            "[Password search - completed in:{0}] Success, the password is: {1}\n".format(format_timer(t2 - t1), password))
+        print("Total Time Taken:{0}".format(format_timer(t2 - t0)))
+
+if __name__ == "__main__":
+    main()
